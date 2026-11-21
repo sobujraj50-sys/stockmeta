@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Stock Meta Pro</title>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#070b14;--panel:#101a2d;--panel2:#0b1424;--line:#1c2840;--line2:#26355a;--ink:#e8eef8;--mut:#8796b0;--cy:#00bcd4;--cy2:#22d3ee;--pink:#ff2d6f;--ok:#22c55e;--warn:#f59e0b;--bad:#f87171}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(900px 500px at 75% -10%,#0d2a40 0,transparent 60%),var(--bg);color:var(--ink);font:14.5px/1.5 Poppins,"Hind Siliguri",system-ui,sans-serif}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:#08101e;border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--cy);box-shadow:0 0 0 3px #00bcd430}
+button{border:0;border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:600;background:#17233b}
+button:hover:not(:disabled){filter:brightness(1.15)}button:disabled{opacity:.45;cursor:default}
+.cy{background:linear-gradient(135deg,#00c4de,#0891b2);color:#fff}.ok{background:#16a34a;color:#fff}.no{background:#dc2626;color:#fff}.gh{background:transparent;border:1px solid var(--line2)}
+header{display:flex;align-items:center;gap:12px;padding:12px 22px;border-bottom:1px solid var(--line);background:#0a1120e6;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{margin:0;font-size:18px;font-weight:800;margin-right:auto}header h1 span{background:linear-gradient(90deg,#22d3ee,#ff2d6f);-webkit-background-clip:text;background-clip:text;color:transparent}
+header a{color:var(--cy2);font-size:13.5px}
+.who{color:var(--mut);font-size:13px}
+main{max-width:1240px;margin:0 auto;padding:22px clamp(12px,3vw,28px) 60px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.sc small{color:var(--mut);font-size:12px;display:block}.sc b{font-size:24px;font-variant-numeric:tabular-nums}
+.sc.hot{border-color:#f59e0b88;box-shadow:0 0 20px #f59e0b22}.sc.hot b{color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.tabs button{background:#131e33}.tabs button.on{background:var(--cy);color:#fff}
+.tabs .cnt{background:#f59e0b;color:#111;border-radius:99px;padding:0 7px;font-size:11.5px;margin-left:5px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.bar .sp{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;padding:10px 12px;border-bottom:1px solid var(--line2);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{color:var(--mut);display:block;font-size:11.5px}
+.trx{font-family:ui-monospace,Consolas,monospace;background:#e2136e1f;color:#ff7ab6;border-radius:6px;padding:1px 7px;cursor:pointer;white-space:nowrap}
+.st{font-weight:600;font-size:12.5px}.st.pending{color:var(--warn)}.st.approved{color:var(--ok)}.st.rejected{color:var(--bad)}
+.act{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.act input{width:120px;padding:6px 9px;font-size:12.5px}.act button{padding:6px 11px;font-size:12.5px}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:18px}
+.form label{display:grid;gap:5px;font-size:13px;color:#c5d0e3;font-weight:600}.form label small{color:var(--mut);font-weight:400}
+.form .full{grid-column:1/-1}
+.form input,.form select,.form textarea{width:100%}
+.pkt input{width:100%;padding:6px 8px;font-size:13px}.pkt input[type=checkbox]{width:18px;height:18px}
+.login{max-width:380px;margin:12vh auto;background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:26px;display:grid;gap:10px}
+.login h2{margin:0 0 6px;text-align:center}.login input{width:100%;padding:11px 13px}
+.err{color:var(--bad);font-size:13px}.err:empty{display:none}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0b1424;border:1px solid var(--cy);padding:10px 18px;border-radius:12px;opacity:0;transition:.25s;pointer-events:none;z-index:50}.toast.on{opacity:1}
+@media(max-width:820px){.tw{overflow-x:auto}table{min-width:760px}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>STOCK META</span> PRO · Admin</h1>
+  <span class="who" id="who"></span>
+  <a href="index.html">← অ্যাপে ফেরো</a>
+  <button class="gh" id="logout" hidden>লগআউট</button>
+</header>
+
+<div class="login" id="login" hidden>
+  <h2>Admin লগইন</h2>
+  <div class="err" id="cfgErr" hidden>config.js-এ Supabase URL আর anon key বসানো হয়নি।</div>
+  <input id="em" type="email" placeholder="ইমেইল" autocomplete="email">
+  <input id="pw" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+  <div class="err" id="lErr"></div>
+  <button class="cy" id="lBtn">লগইন</button>
+</div>
+
+<main id="app" hidden>
+  <div class="stats" id="stats"></div>
+  <div class="tabs" id="tabs">
+    <button data-t="pay" class="on">পেমেন্ট<span class="cnt" id="pendCnt" hidden></span></button>
+    <button data-t="users">ইউজার</button>
+    <button data-t="pk">প্যাকেজ</button>
+    <button data-t="set">সেটিংস</button>
+  </div>
+
+  <section data-s="pay">
+    <div class="bar">
+      <select id="payFilter"><option value="pending">অপেক্ষায় থাকা</option><option value="approved">অনুমোদিত</option><option value="rejected">বাতিল</option><option value="all">সব</option></select>
+      <input id="paySearch" placeholder="TrxID বা বিকাশ নম্বর খোঁজো">
+      <span class="sp"></span><button class="gh" id="payReload">রিফ্রেশ</button>
+    </div>
+    <div class="card tw"><table><thead><tr><th>সময়</th><th>ইউজার</th><th>প্যাকেজ</th><th>টাকা</th><th>ক্রেডিট</th><th>বিকাশ নম্বর</th><th>TrxID</th><th>অবস্থা</th><th>কাজ</th></tr></thead><tbody id="payRows"></tbody></table></div>
+    <p class="who">টিপস: বিকাশ অ্যাপের স্টেটমেন্টে TrxID আর টাকার পরিমাণ মিলিয়ে তারপর Approve করো। TrxID-তে ক্লিক করলে কপি হয়।</p>
+  </section>
+
+  <section data-s="users" hidden>
+    <div class="bar"><input id="uSearch" placeholder="ইমেইল দিয়ে খোঁজো" style="min-width:260px"><span class="sp"></span><button class="gh" id="uReload">রিফ্রেশ</button></div>
+    <div class="card tw"><table><thead><tr><th>ইউজার</th><th>ক্রেডিট</th><th>যোগ দিয়েছে</th><th>শেষ এসেছে</th><th>ক্রেডিট বদলাও</th><th>অবস্থা</th></tr></thead><tbody id="uRows"></tbody></table></div>
+  </section>
+
+  <section data-s="pk" hidden>
+    <div class="bar"><span class="who">দাম আর ক্রেডিট বদলালে শুধু নতুন পেমেন্টে প্রযোজ্য হয়। প্যাকেজ মুছতে Active বন্ধ করো।</span><span class="sp"></span><button class="cy" id="pkAdd">+ নতুন প্যাকেজ</button></div>
+    <div class="card tw"><table class="pkt"><thead><tr><th>নাম</th><th>দাম (টাকা)</th><th>ক্রেডিট</th><th>ছোট নোট</th><th>Popular</th><th>Active</th><th>ক্রম</th><th></th></tr></thead><tbody id="pkRows"></tbody></table></div>
+  </section>
+
+  <section data-s="set" hidden>
+    <div class="card"><div class="form">
+      <label>বিকাশ নম্বর<small>এই নম্বরে ক্রেতারা টাকা পাঠাবে</small><input id="sNum" inputmode="numeric"></label>
+      <label>বিকাশ অ্যাকাউন্টের ধরন<select id="sType"><option>Personal</option><option>Merchant</option><option>Agent</option></select></label>
+      <label>সাইন আপে ফ্রি ক্রেডিট<input id="sFree" type="number" min="0"></label>
+      <label>Metadata খরচ (প্রতি ফাইল)<input id="sCm" type="number" min="0"></label>
+      <label>Image to Prompt খরচ<input id="sCp" type="number" min="0"></label>
+      <label>Video to Prompt খরচ<input id="sCv" type="number" min="0"></label>
+      <label class="full">নোটিশ<small>সব ইউজারের অ্যাপে উপরে দেখাবে। ফাঁকা রাখলে দেখাবে না।</small><input id="sNotice" placeholder="যেমন: ঈদ অফার! সব প্যাকেজে ২০% বেশি ক্রেডিট"></label>
+      <label class="full">সাপোর্ট লিংক<small>WhatsApp/Facebook গ্রুপ। অ্যাপের প্রোফাইল মেনুতে দেখাবে।</small><input id="sSupport" placeholder="https://chat.whatsapp.com/..."></label>
+      <div class="full"><button class="cy" id="sSave">সেটিংস সেভ করো</button></div>
+    </div></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const toast=t=>{const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),2400)};
+const fdate=t=>t?new Date(t).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+const CFG=window.SMP_CONFIG||{};
+const ok=CFG.SUPABASE_URL&&!/YOUR-/.test(CFG.SUPABASE_URL)&&CFG.SUPABASE_ANON_KEY&&!/YOUR-/.test(CFG.SUPABASE_ANON_KEY)&&window.supabase;
+const sb=ok?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY):null;
+const E=e=>(e&&e.message)||String(e);
+
+/* ---- login ---- */
+async function boot(){
+  if(!sb){$("login").hidden=false;$("cfgErr").hidden=false;return}
+  const{data}=await sb.auth.getSession();
+  if(!data.session){$("login").hidden=false;return}
+  const r=await sb.rpc("get_me");
+  if(r.error||!r.data.is_admin){$("login").hidden=false;$("lErr").textContent=r.error?E(r.error):"এই অ্যাকাউন্ট অ্যাডমিন না।";return}
+  $("login").hidden=true;$("app").hidden=false;$("logout").hidden=false;$("who").textContent=r.data.email;
+  loadStats();loadPay();
+}
+$("lBtn").onclick=async()=>{$("lErr").textContent="";const{error}=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(error)return $("lErr").textContent=/Invalid login/.test(E(error))?"ইমেইল বা পাসওয়ার্ড ভুল":E(error);boot()};
+$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")$("lBtn").click()});
+$("logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
+
+/* ---- tabs ---- */
+$("tabs").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{$("tabs").querySelectorAll("[data-t]").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll("[data-s]").forEach(s=>s.hidden=s.dataset.s!==b.dataset.t);({pay:loadPay,users:loadUsers,pk:loadPk,set:loadSet})[b.dataset.t]()});
+
+/* ---- stats ---- */
+async function loadStats(){const{data,error}=await sb.rpc("admin_stats");if(error)return toast(E(error));
+  const S=[["মোট ইউজার",data.users],["আজ নতুন",data.users_today],["৭ দিনে সক্রিয়",data.active_7d],["অপেক্ষায় পেমেন্ট",data.pending,data.pending>0],["মোট আয় (টাকা)",data.revenue],["৩০ দিনে আয়",data.revenue_30d],["আজ প্রসেস হওয়া ফাইল",data.files_today],["মোট ফাইল",data.files_total]];
+  $("stats").innerHTML=S.map(([l,v,h])=>`<div class="sc${h?" hot":""}"><small>${l}</small><b>${Number(v).toLocaleString("en")}</b></div>`).join("");
+  $("pendCnt").hidden=!data.pending;$("pendCnt").textContent=data.pending}
+
+/* ---- payments ---- */
+const SN={pending:"অপেক্ষায়",approved:"অনুমোদিত",rejected:"বাতিল"};
+async function loadPay(){
+  let q=sb.from("payments").select("*, profiles(email,name,credits)").order("created_at",{ascending:false}).limit(200);
+  const f=$("payFilter").value;if(f!=="all")q=q.eq("status",f);
+  const{data,error}=await q;if(error)return $("payRows").innerHTML=`<tr><td colspan="9" class="empty">${esc(E(error))}</td></tr>`;
+  const s=$("paySearch").value.trim().toUpperCase();
+  const rows=(data||[]).filter(p=>!s||p.trx_id.includes(s)||p.sender.includes(s));
+  $("payRows").innerHTML=rows.map(p=>`<tr data-id="${p.id}">
+    <td>${fdate(p.created_at)}</td>
+    <td>${esc(p.profiles?.email||"?")}<small>${esc(p.profiles?.name||"")} · এখন ${p.profiles?.credits??"?"} ক্রেডিট</small></td>
+    <td>${esc(p.package_name)}</td><td class="n">${p.amount}</td><td class="n">${p.credits.toLocaleString("en")}</td>
+    <td>${esc(p.sender)}</td><td><span class="trx" title="কপি">${esc(p.trx_id)}</span></td>
+    <td><span class="st ${p.status}">${SN[p.status]}</span>${p.note?`<small>${esc(p.note)}</small>`:""}${p.reviewed_at?`<small>${fdate(p.reviewed_at)}</small>`:""}</td>
+    <td>${p.status==="pending"?`<div class="act"><button class="ok" data-a="1">Approve</button><input placeholder="বাতিলের কারণ"><button class="no" data-a="0">Reject</button></div>`:""}</td></tr>`).join("")||`<tr><td colspan="9" class="empty">কিছু নেই</td></tr>`;
+  $("payRows").querySelectorAll(".trx").forEach(t=>t.onclick=()=>navigator.clipboard.writeText(t.textContent).then(()=>toast("কপি হয়েছে")));
+  $("payRows").querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const tr=b.closest("tr");const approve=b.dataset.a==="1";const note=tr.querySelector("input").value.trim();
+    if(!approve&&!note)return toast("বাতিলের কারণ লিখো, ইউজার সেটা দেখবে");
+    tr.querySelectorAll("button").forEach(x=>x.disabled=true);
+    const{error}=await sb.rpc("admin_review_payment",{p_id:+tr.dataset.id,p_approve:approve,p_note:note});
+    if(error){toast(E(error));tr.querySelectorAll("button").forEach(x=>x.disabled=false);return}
+    toast(approve?"অনুমোদিত, ক্রেডিট যোগ হয়েছে ✓":"বাতিল করা হয়েছে");loadPay();loadStats()});
+}
+$("payFilter").onchange=loadPay;$("payReload").onclick=()=>{loadPay();loadStats()};
+let pst;$("paySearch").oninput=()=>{clearTimeout(pst);pst=setTimeout(loadPay,300)};
+
+/* ---- users ---- */
+async function loadUsers(){
+  let q=sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(100);
+  const s=$("uSearch").value.trim();if(s)q=q.ilike("email","%"+s+"%");
+  const{data,error}=await q;if(error)return $("uRows").innerHTML=`<tr><td colspan="6" class="empty">${esc(E(error))}</td></tr>`;
+  $("uRows").innerHTML=(data||[]).map(u=>`<tr data-id="${u.id}">
+    <td>${esc(u.email)}${u.is_admin?' <span class="st approved">admin</span>':""}<small>${esc(u.name)}</small></td>
+    <td class="n"><b>${u.credits.toLocaleString("en")}</b></td><td>${fdate(u.created_at)}</td><td>${fdate(u.last_seen)}</td>
+    <td><div class="act"><input type="number" placeholder="সংখ্যা" min="1"><button class="ok" data-c="1">+ যোগ</button><button class="gh" data-c="-1">− বাদ</button></div></td>
+    <td>${u.is_admin?"":`<button class="${u.blocked?"ok":"no"}" data-b="${u.blocked?0:1}">${u.blocked?"চালু করো":"বন্ধ করো"}</button>`}${u.blocked?'<small class="st rejected">বন্ধ</small>':""}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">কেউ নেই</td></tr>`;
+  $("uRows").querySelectorAll("[data-c]").forEach(b=>b.onclick=async()=>{const tr=b.closest("tr");const n=parseInt(tr.querySelector("input").value);if(!(n>0))return toast("একটা সংখ্যা লিখো");
+    const{error}=await sb.rpc("admin_adjust_credits",{p_user:tr.dataset.id,p_delta:n*+b.dataset.c,p_reason:"admin panel"});if(error)return toast(E(error));toast("ক্রেডিট আপডেট হয়েছে ✓");loadUsers()});
+  $("uRows").querySelectorAll("[data-b]").forEach(b=>b.onclick=async()=>{const tr=b.closest("tr");
+    const{error}=await sb.rpc("admin_set_blocked",{p_user:tr.dataset.id,p_blocked:b.dataset.b==="1"});if(error)return toast(E(error));toast("আপডেট হয়েছে ✓");loadUsers()});
+}
+let ust;$("uSearch").oninput=()=>{clearTimeout(ust);ust=setTimeout(loadUsers,300)};$("uReload").onclick=loadUsers;
+
+/* ---- packages ---- */
+async function loadPk(){
+  const{data,error}=await sb.from("packages").select("*").order("sort",{ascending:true});if(error)return toast(E(error));
+  $("pkRows").innerHTML=(data||[]).map(p=>`<tr data-id="${p.id}"><td><input data-f="name" value="${esc(p.name)}"></td><td><input data-f="price_tk" type="number" min="0" value="${p.price_tk}"></td><td><input data-f="credits" type="number" min="1" value="${p.credits}"></td>
+    <td><input data-f="note" value="${esc(p.note)}"></td><td><input data-f="popular" type="checkbox" ${p.popular?"checked":""}></td><td><input data-f="active" type="checkbox" ${p.active?"checked":""}></td><td><input data-f="sort" type="number" value="${p.sort}" style="width:64px"></td>
+    <td><button class="cy" data-save>সেভ</button></td></tr>`).join("")||`<tr><td colspan="8" class="empty">কোনো প্যাকেজ নেই</td></tr>`;
+  $("pkRows").querySelectorAll("[data-save]").forEach(b=>b.onclick=async()=>{const tr=b.closest("tr");const o={};
+    tr.querySelectorAll("[data-f]").forEach(i=>o[i.dataset.f]=i.type==="checkbox"?i.checked:i.type==="number"?parseInt(i.value||0):i.value.trim());
+    if(!o.name||!(o.credits>0)||o.price_tk<0)return toast("নাম, দাম আর ক্রেডিট ঠিকমতো দাও");
+    const{error}=await sb.from("packages").update(o).eq("id",+tr.dataset.id);if(error)return toast(E(error));toast("প্যাকেজ সেভ হয়েছে ✓")});
+}
+$("pkAdd").onclick=async()=>{const{error}=await sb.from("packages").insert({name:"নতুন প্যাকেজ",price_tk:100,credits:1000,note:"",active:false,sort:99});if(error)return toast(E(error));toast("যোগ হয়েছে। ঠিক করে Active চালু করে সেভ করো");loadPk()};
+
+/* ---- settings ---- */
+const SF={sNum:"bkash_number",sType:"bkash_type",sFree:"free_credits",sCm:"cost_meta",sCp:"cost_prompt",sCv:"cost_video",sNotice:"notice",sSupport:"support_link"};
+async function loadSet(){const{data,error}=await sb.from("app_settings").select("*").eq("id",1).single();if(error)return toast(E(error));for(const k in SF)$(k).value=data[SF[k]]??""}
+$("sSave").onclick=async()=>{const o={};for(const k in SF){const v=$(k).value.trim();o[SF[k]]=$(k).type==="number"?parseInt(v||0):v}
+  if(!/^01[3-9][0-9]{8}$/.test(o.bkash_number))return toast("বিকাশ নম্বর ঠিক নেই (01XXXXXXXXX)");
+  const{error}=await sb.from("app_settings").update(o).eq("id",1);if(error)return toast(E(error));toast("সেটিংস সেভ হয়েছে ✓")};
+
+boot();
+setInterval(()=>{if(!$("app").hidden&&document.visibilityState==="visible"){loadStats();if(!document.querySelector('[data-s="pay"]').hidden&&$("payFilter").value==="pending")loadPay()}},60000);
+}
+</script>
+</body>
+</html>
